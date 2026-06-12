@@ -1,0 +1,44 @@
+# Ignorar datos locales
+data/
+
+# Ignorar archivos de entorno
+.env
+.env.local
+
+# Ignorar caché de Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Ignorar IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Ignorar archivos del sistema
+.DS_Store
+Thumbs.db
+
+# Ignorar virtualenv
+venv/
+ENV/
+env/
