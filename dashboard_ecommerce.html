@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard E-Commerce</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+
+        /* HEADER */
+        .header {
+            background: linear-gradient(135deg, #1e3a5f 0%, #2c5aa0 100%);
+            padding: 25px 35px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+            border-bottom: 3px solid #0066cc;
+        }
+
+        .header-left {
+            flex: 1;
+        }
+
+        .header-left h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin: 0 0 8px 0;
+        }
+
+        .page-tabs {
+            display: flex;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .tab-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 8px 18px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.6);
+        }
+
+        .tab-btn.active {
+            background: #0066cc;
+            border-color: #0066cc;
+            box-shadow: 0 4px 12px rgba(0, 102, 204, 0.3);
+        }
+
+        .header-right {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .filter-group {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 12px 18px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .filter-label {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .filter-select {
+            background: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 13px;
+            color: #1e3a5f;
+            cursor: pointer;
+            font-weight: 500;
+            min-width: 140px;
+        }
+
+        .filter-select:focus {
+            outline: 2px solid #0066cc;
+            outline-offset: -1px;
+        }
+
+        /* PÁGINA */
+        .page {
+            display: none;
+            padding: 30px 35px;
+        }
+
+        .page.active {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* KPI CARDS */
+        .kpi-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .kpi-card {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            border: 1px solid #e9ecef;
+            border-left: 4px solid #0066cc;
+            transition: all 0.3s ease;
+        }
+
+        .kpi-card:hover {
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+            transform: translateY(-4px);
+        }
+
+        .kpi-card.warning {
+            border-left-color: #ff6b35;
+        }
+
+        .kpi-card.success {
+            border-left-color: #2ecc71;
+        }
+
+        .kpi-label {
+            font-size: 12px;
+            color: #6c757d;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .kpi-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #1e3a5f;
+            margin-bottom: 8px;
+        }
+
+        .kpi-delta {
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .kpi-delta.positive {
+            color: #2ecc71;
+        }
+
+        .kpi-delta.negative {
+            color: #ff6b35;
+        }
+
+        /* GRÁFICOS */
+        .charts-row {
+            display: grid;
+            grid-template-columns: 60% 40%;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            border: 1px solid #e9ecef;
+        }
+
+        .chart-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1e3a5f;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .chart-title::before {
+            content: '';
+            width: 4px;
+            height: 16px;
+            background: #0066cc;
+            border-radius: 2px;
+        }
+
+        .chart-canvas {
+            position: relative;
+            height: 280px;
+        }
+
+        /* TABLA */
+        .table-container {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            border: 1px solid #e9ecef;
+            overflow-x: auto;
+        }
+
+        .table-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1e3a5f;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .table-title::before {
+            content: '';
+            width: 4px;
+            height: 16px;
+            background: #0066cc;
+            border-radius: 2px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        thead {
+            background: #f8f9fa;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        th {
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+            color: #6c757d;
+            text-transform: uppercase;
+            font-size: 11px;
+        }
+
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #f1f3f5;
+            color: #1e3a5f;
+        }
+
+        tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .badge-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .badge-danger {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .badge-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 1200px) {
+            .charts-row {
+                grid-template-columns: 1fr;
+            }
+
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .header-right {
+                width: 100%;
+                flex-wrap: wrap;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .kpi-row {
+                grid-template-columns: 1fr;
+            }
+
+            .header-right {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .filter-group {
+                width: 100%;
+            }
+
+            .filter-select {
+                width: 100%;
+            }
+
+            body {
+                padding: 10px;
+            }
+
+            .header {
+                padding: 15px 20px;
+            }
+
+            .page {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER -->
+        <div class="header">
+            <div class="header-left">
+                <h1>📊 Dashboard de Rendimiento E-Commerce</h1>
+                <div class="page-tabs">
+                    <button class="tab-btn active" onclick="cambiarPagina('ventas')">💰 Ventas</button>
+                    <button class="tab-btn" onclick="cambiarPagina('operaciones')">⚙️ Operaciones</button>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="filter-group">
+                    <label class="filter-label">Categoría</label>
+                    <select class="filter-select" id="filterCategoria" onchange="actualizarDatos()">
+                        <option value="">Todas</option>
+                        <option value="Electronics">Electronics</option>
+                        <option value="Clothing">Clothing</option>
+                        <option value="Home">Home</option>
+                        <option value="Sports">Sports</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Período</label>
+                    <select class="filter-select" id="filterPeriodo" onchange="actualizarDatos()">
+                        <option value="2024-01">Enero 2024</option>
+                        <option value="2024-02">Febrero 2024</option>
+                        <option value="2024-03">Marzo 2024</option>
+                        <option value="2024-04">Abril 2024</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Ciudad</label>
+                    <select class="filter-select" id="filterCiudad" onchange="actualizarDatos()">
+                        <option value="">Todas</option>
+                        <option value="New York">New York</option>
+                        <option value="Los Angeles">Los Angeles</option>
+                        <option value="Chicago">Chicago</option>
+                        <option value="Miami">Miami</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- PÁGINA 1: VENTAS -->
+        <div id="pagina-ventas" class="page active">
+            <!-- KPIs -->
+            <div class="kpi-row">
+                <div class="kpi-card">
+                    <div class="kpi-label">Ventas Totales</div>
+                    <div class="kpi-value" id="kpi-ventas">$1,245,800</div>
+                    <div class="kpi-delta positive">↑ 12.5% vs mes anterior</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Cantidad de Pedidos</div>
+                    <div class="kpi-value" id="kpi-pedidos">3,847</div>
+                    <div class="kpi-delta positive">↑ 8.3% vs mes anterior</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Ticket Promedio</div>
+                    <div class="kpi-value" id="kpi-ticket">$323.50</div>
+                    <div class="kpi-delta positive">↑ 3.8% vs mes anterior</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Descuento Promedio</div>
+                    <div class="kpi-value" id="kpi-descuento">8.2%</div>
+                    <div class="kpi-delta negative">↓ -1.2% vs mes anterior</div>
+                </div>
+            </div>
+
+            <!-- GRÁFICOS PRINCIPALES -->
+            <div class="charts-row">
+                <div class="chart-container">
+                    <div class="chart-title">Ventas por Categoría y Precio Promedio</div>
+                    <div class="chart-canvas">
+                        <canvas id="chartVentasCategoria"></canvas>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-title">Distribución por Dispositivo</div>
+                    <div class="chart-canvas">
+                        <canvas id="chartDispositivo"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GRÁFICO TENDENCIA -->
+            <div class="chart-container">
+                <div class="chart-title">Tendencia de Ventas (Últimos 30 días)</div>
+                <div class="chart-canvas" style="height: 300px;">
+                    <canvas id="chartTendencia"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- PÁGINA 2: OPERACIONES -->
+        <div id="pagina-operaciones" class="page">
+            <!-- KPIs OPERATIVOS -->
+            <div class="kpi-row">
+                <div class="kpi-card warning">
+                    <div class="kpi-label">Tasa de Devolución</div>
+                    <div class="kpi-value" id="kpi-devolucion">4.8%</div>
+                    <div class="kpi-delta negative">↑ +0.6% vs mes anterior</div>
+                </div>
+                <div class="kpi-card warning">
+                    <div class="kpi-label">Órdenes Demoradas/En Tránsito</div>
+                    <div class="kpi-value" id="kpi-demoradas">487</div>
+                    <div class="kpi-delta negative">↑ +8.2% vs mes anterior</div>
+                </div>
+                <div class="kpi-card success">
+                    <div class="kpi-label">Calificación Promedio</div>
+                    <div class="kpi-value" id="kpi-rating">4.6/5.0</div>
+                    <div class="kpi-delta positive">↑ +0.1 vs mes anterior</div>
+                </div>
+            </div>
+
+            <!-- GRÁFICOS OPERATIVOS -->
+            <div class="charts-row">
+                <div class="chart-container">
+                    <div class="chart-title">Estado del Envío</div>
+                    <div class="chart-canvas">
+                        <canvas id="chartEstadoEnvio"></canvas>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-title">Precio vs Tasa de Devolución</div>
+                    <div class="chart-canvas">
+                        <canvas id="chartDispersion"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TABLA PROBLEMAS -->
+            <div class="table-container">
+                <div class="table-title">Top 10 Productos con Peor Rating y Mayor Precio</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID Producto</th>
+                            <th>Nombre</th>
+                            <th>Categoría</th>
+                            <th>Precio</th>
+                            <th>Rating Promedio</th>
+                            <th>Cantidad Devuelta</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaProblemas">
+                        <!-- Generada por JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DATOS BASE
+        const datos = {
+            categorias: ['Electronics', 'Clothing', 'Home', 'Sports'],
+            ciudades: ['New York', 'Los Angeles', 'Chicago', 'Miami'],
+            periodos: ['2024-01', '2024-02', '2024-03', '2024-04'],
+            
+            ventas: {
+                'Electronics': { valor: 587900, ordenes: 1240, precio_promedio: 475 },
+                'Clothing': { valor: 345600, ordenes: 1852, precio_promedio: 87 },
+                'Home': { valor: 198700, ordenes: 623, precio_promedio: 319 },
+                'Sports': { valor: 113600, ordenes: 132, precio_promedio: 860 }
+            },
+
+            dispositivos: {
+                'Electronics': { web: 35, app: 55, tablet: 10 },
+                'Clothing': { web: 45, app: 48, tablet: 7 },
+                'Home': { web: 50, app: 42, tablet: 8 },
+                'Sports': { web: 40, app: 50, tablet: 10 }
+            },
+
+            productos_problematicos: [
+                { id: 'PROD-001', nombre: '4K Smart TV 65"', categoria: 'Electronics', precio: 899, rating: 3.2, devueltas: 45 },
+                { id: 'PROD-002', nombre: 'Premium Laptop', categoria: 'Electronics', precio: 1299, rating: 3.5, devueltas: 38 },
+                { id: 'PROD-003', nombre: 'Designer Handbag', categoria: 'Clothing', precio: 450, rating: 3.7, devueltas: 28 },
+                { id: 'PROD-004', nombre: 'Gaming Monitor', categoria: 'Electronics', precio: 599, rating: 3.8, devueltas: 22 },
+                { id: 'PROD-005', nombre: 'Sofa Premium', categoria: 'Home', precio: 1200, rating: 3.4, devueltas: 18 },
+                { id: 'PROD-006', nombre: 'Winter Jacket', categoria: 'Clothing', precio: 250, rating: 3.9, devueltas: 15 },
+                { id: 'PROD-007', nombre: 'Dining Table Set', categoria: 'Home', precio: 850, rating: 4.0, devueltas: 12 },
+                { id: 'PROD-008', nombre: 'Professional Camera', categoria: 'Electronics', precio: 1800, rating: 4.1, devueltas: 10 },
+                { id: 'PROD-009', nombre: 'Yoga Mat Premium', categoria: 'Sports', precio: 199, rating: 4.2, devueltas: 8 },
+                { id: 'PROD-010', nombre: 'Running Shoes', categoria: 'Sports', precio: 180, rating: 4.3, devueltas: 6 }
+            ],
+
+            estado_envio: {
+                'Delivered': 82.5,
+                'In Transit': 12.3,
+                'Delayed': 3.2,
+                'Cancelled': 2.0
+            }
+        };
+
+        let chartVentasCategoria, chartDispositivo, chartTendencia, chartEstadoEnvio, chartDispersion;
+
+        function actualizarDatos() {
+            actualizarKPIs();
+            actualizarGraficos();
+            actualizarTabla();
+        }
+
+        function actualizarKPIs() {
+            document.getElementById('kpi-ventas').textContent = '$1,245,800';
+            document.getElementById('kpi-pedidos').textContent = '3,847';
+            document.getElementById('kpi-ticket').textContent = '$323.50';
+            document.getElementById('kpi-descuento').textContent = '8.2%';
+        }
+
+        function actualizarGraficos() {
+            // Gráfico 1: Ventas por Categoría
+            if (chartVentasCategoria) chartVentasCategoria.destroy();
+            chartVentasCategoria = new Chart(document.getElementById('chartVentasCategoria'), {
+                type: 'bar',
+                data: {
+                    labels: datos.categorias,
+                    datasets: [
+                        {
+                            label: 'Ventas Totales',
+                            data: datos.categorias.map(c => datos.ventas[c].valor / 1000),
+                            backgroundColor: '#0066cc',
+                            borderRadius: 6,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: 'Precio Promedio',
+                            data: datos.categorias.map(c => datos.ventas[c].precio_promedio),
+                            borderColor: '#ff6b35',
+                            backgroundColor: 'rgba(255, 107, 53, 0.1)',
+                            type: 'line',
+                            tension: 0.4,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: { display: true, position: 'top' }
+                    },
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            ticks: { callback: v => '$' + v + 'k' }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            ticks: { callback: v => '$' + v }
+                        }
+                    }
+                }
+            });
+
+            // Gráfico 2: Dispositivos (Barras 100% apiladas)
+            if (chartDispositivo) chartDispositivo.destroy();
+            const deviceData = datos.categorias.map(cat => [
+                datos.dispositivos[cat].web,
+                datos.dispositivos[cat].app,
+                datos.dispositivos[cat].tablet
+            ]);
+            
+            chartDispositivo = new Chart(document.getElementById('chartDispositivo'), {
+                type: 'bar',
+                data: {
+                    labels: datos.categorias,
+                    datasets: [
+                        {
+                            label: 'Web',
+                            data: deviceData.map(d => d[0]),
+                            backgroundColor: '#0066cc'
+                        },
+                        {
+                            label: 'Mobile App',
+                            data: deviceData.map(d => d[1]),
+                            backgroundColor: '#00cc88'
+                        },
+                        {
+                            label: 'Tablet',
+                            data: deviceData.map(d => d[2]),
+                            backgroundColor: '#ffaa00'
+                        }
+                    ]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { x: { stacked: true }, y: { stacked: true } },
+                    plugins: { legend: { display: true, position: 'bottom' } }
+                }
+            });
+
+            // Gráfico 3: Tendencia
+            if (chartTendencia) chartTendencia.destroy();
+            const dias = Array.from({length: 30}, (_, i) => i + 1);
+            const ventasDiarias = dias.map(() => Math.floor(Math.random() * 50000 + 35000));
+            
+            chartTendencia = new Chart(document.getElementById('chartTendencia'), {
+                type: 'line',
+                data: {
+                    labels: dias.map(d => 'Día ' + d),
+                    datasets: [{
+                        label: 'Ventas Diarias',
+                        data: ventasDiarias,
+                        borderColor: '#0066cc',
+                        backgroundColor: 'rgba(0, 102, 204, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 3,
+                        pointBackgroundColor: '#0066cc'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: true } }
+                }
+            });
+
+            // Gráfico 4: Estado de Envío
+            if (chartEstadoEnvio) chartEstadoEnvio.destroy();
+            chartEstadoEnvio = new Chart(document.getElementById('chartEstadoEnvio'), {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(datos.estado_envio),
+                    datasets: [{
+                        data: Object.values(datos.estado_envio),
+                        backgroundColor: ['#00cc88', '#ffaa00', '#ff6b35', '#cccccc']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            });
+
+            // Gráfico 5: Dispersión
+            if (chartDispersion) chartDispersion.destroy();
+            const scatterData = datos.productos_problematicos.map(p => ({
+                x: p.precio,
+                y: (5 - p.rating) * 100 / 5
+            }));
+
+            chartDispersion = new Chart(document.getElementById('chartDispersion'), {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'Productos',
+                        data: scatterData,
+                        backgroundColor: scatterData.map(p => p.y > 20 ? '#ff6b35' : '#ffaa00')
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { title: { display: true, text: 'Precio ($)' } },
+                        y: { title: { display: true, text: 'Tasa de Devolución (%)' } }
+                    }
+                }
+            });
+        }
+
+        function actualizarTabla() {
+            const tbody = document.getElementById('tablaProblemas');
+            tbody.innerHTML = datos.productos_problematicos.slice(0, 10).map(p => `
+                <tr>
+                    <td>${p.id}</td>
+                    <td>${p.nombre}</td>
+                    <td>${p.categoria}</td>
+                    <td>$${p.precio}</td>
+                    <td><span class="badge ${p.rating < 3.5 ? 'badge-danger' : 'badge-warning'}">${p.rating}/5.0</span></td>
+                    <td>${p.devueltas}</td>
+                    <td><span class="badge badge-danger">⚠️ Alto Riesgo</span></td>
+                </tr>
+            `).join('');
+        }
+
+        function cambiarPagina(pagina) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            
+            if (pagina === 'ventas') {
+                document.getElementById('pagina-ventas').classList.add('active');
+                document.querySelectorAll('.tab-btn')[0].classList.add('active');
+            } else {
+                document.getElementById('pagina-operaciones').classList.add('active');
+                document.querySelectorAll('.tab-btn')[1].classList.add('active');
+            }
+        }
+
+        // Inicializar
+        actualizarDatos();
+    </script>
+</body>
+</html>
